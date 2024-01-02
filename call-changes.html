@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<style>
+		body {
+			font-family: Arial, Helvetica, sans-serif;
+		}
+
+		.rows {
+			display: grid;
+		}
+
+		.place,
+		.bell {
+			margin: 0;
+			padding: 10px 15px;
+		}
+
+		.place.changed {
+			font-weight: bold;
+			background-color: bisque;
+		}
+
+		.place:hover {
+			border: 1px solid orange;
+			box-shadow: gray 1px 1px;
+			background-color: rgb(255, 240, 200);
+		}
+
+		.change span:hover {
+			background-color: pink;
+		}
+
+		#changes {
+			margin: 20px 10px;
+			user-select: none;
+			display: grid;
+			grid-template-columns: 50px auto;
+		}
+
+		.row,
+		.places {
+			padding: 5px 15px;
+		}
+
+		.rowAndPlaces {
+			display: flex;
+		}
+
+		.row {display:flex;}
+
+		.places {
+			display: none;
+		}
+		.showPlaces .places {
+			display: flex;
+		}
+
+		.places {
+			background-color: azure;
+		}
+	</style>
+	<script>
+		class Place {
+			bell = 0;
+			mark = false;
+			constructor(n, mark = false) {
+				this.bell = n;
+				this.mark = mark;
+			}
+		}
+		class Row {
+			change = null;
+			places = [];
+			swap(bellFrom, bellTo) {
+				let next = new Row();
+				let last = this.places.length;
+				for (let i = 0; i < last; i++) {
+					if (i < last - 1 && this.places[i].bell == bellFrom) {
+						next.add(this.places[i + 1].bell, true);
+						next.add(this.places[i].bell, true);
+						i++;
+						next.change = [bellFrom, bellTo];
+					}
+					else {
+						next.add(this.places[i].bell);
+					}
+				}
+				return next;
+			}
+			add(bell, mark = false) {
+				this.places.push(new Place(bell, mark));
+			}
+			size() {
+				return this.places.length;
+			}
+		}
+		class Changes {
+			constructor(size) {
+				this.rows = [];
+				let firstRow = new Row();
+				this.rows.push(firstRow);
+				for (let i = 1; i <= size; i++) {
+					firstRow.add(i);
+				}
+			}
+			change(bellFrom, bellTo) {
+				this.rows.push(this.rows[this.rows.length - 1].swap(bellFrom, bellTo));
+			}
+			size() {
+				return this.rows.length;
+			}
+
+		}
+		class ChangeDisplay {
+			constructor() {
+				this.topDiv = document.getElementById("changes");
+				this.changes = new Changes(8);
+				this.show();
+			}
+			show() {
+				let op = [];
+				let last = this.changes.size();
+				for (let i = 0; i < last; i++) {
+					let row = this.changes.rows[i];
+					if (row.change) {
+						op.push(`<div class='change' onclick="undo()"><span>${row.change[0]} to ${row.change[1]}</span></div>`);
+					} else {
+						op.push("<div></div>");
+					}
+					let bells = [];
+					let following = [];
+					let previous = "L";
+					op.push("<div class='rowAndPlaces'>");
+					op.push("<div class='row'>");
+					for (let j = 0; j < row.places.length; j++) {
+						let mark = row.places[j].mark ? "changed" : "";
+						let n = row.places[j].bell;
+						bells[n] = j + 1;
+						following[n] = previous;
+						previous = n;
+						op.push(`<div class='place ${mark}' onclick="go(${n})">${n}</div>`);
+					}
+					op.push("</div>");
+					op.push("<div class='places'>");
+					for (let b = 1; b < bells.length; b++) {
+						op.push(`<div class='bell'>${bells[b]}<br/>${following[b]}</div>`);
+					}
+					op.push("</div>");
+					op.push("</div>");
+				}
+				let s = op.join("");
+				this.topDiv.innerHTML = s;
+			}
+			swap(bellFrom) {
+				let lastRow = this.changes.rows[this.changes.rows.length - 1];
+				for (let i = 0; i < lastRow.size() - 1; i++) {
+					if (lastRow.places[i].bell == bellFrom) {
+						this.changes.change(bellFrom, lastRow.places[i + 1].bell);
+						break;
+					}
+				}
+				this.show();
+			}
+			undo() {
+				let lastRow = this.changes.rows.pop();
+				this.show();
+			}
+			showPlaces(value) {
+				if (!value) {
+					this.topDiv.classList.remove("showPlaces");
+				} else {
+					this.topDiv.classList.add("showPlaces");
+				}
+			}
+		}
+
+		function flipPlacesDisplay(value) {
+			changeDisplay.showPlaces(value);
+		}
+
+		function go(bellFrom) {
+			changeDisplay.swap(bellFrom);
+		}
+		function goChange() {
+			let bellFrom = document.getElementById("changeChoice").value;
+			go(bellFrom);
+		}
+		function undo() {
+			changeDisplay.undo();
+		}
+		function init() {
+			changeDisplay = new ChangeDisplay();
+		}
+	</script>
+</head>
+
+<body onload="init()">
+	<!--
+		<input type="text" id="changeChoice"></input> <button onclick="goChange()">go</button>
+		-->
+	<input type="checkbox" id="placesDisplaySwitch" onchange="flipPlacesDisplay(this.checked)" /><label>show
+		places</label>
+	<div id="changes">
+
+	</div>
+</body>
+
+</html>
