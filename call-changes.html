@@ -144,11 +144,14 @@
 		class RopeDisplay {
 			constructor(bell, place, bells) {
 				this.bell = bell;
-				this.place = place + 1;
+				this.place = place ;
 				this.bells = bells + 1;
 			}
 			show() {
-				return `<div class="rope"><div id="rope${this.bell}" style='height:${100 * this.place / this.bells}%;'>${this.bell}</div></div>`;
+				return `<div class="rope">
+					<div id="rope${this.bell}" 
+					style='height:${100 * (this.bells - this.place) / this.bells}%;'
+					>${this.bell}</div></div>`;
 			}
 		}
 		class RopeSetDisplay {
