@@ -1,11 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<title>Changes</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<style>
+		:root {
+			--ropes : 8;
+		}
 		body {
 			font-family: Arial, Helvetica, sans-serif;
+		}
+
+		#ropesInput {
+			width: 2.5em;
 		}
 
 		.rows {
@@ -39,7 +47,7 @@
 
 		.call-down {
 			font-size: small;
-			color:dodgerblue;
+			color: dodgerblue;
 			margin-left: 10px;
 		}
 
@@ -70,7 +78,7 @@
 		}
 
 		.showPlaces .places {
-			display: flex;
+			display: block;
 		}
 
 		.places {
@@ -80,8 +88,8 @@
 
 		.ropeSet {
 			display: flex;
-			justify-content: space-evenly;
-			width: 200px;
+			justify-content: space-between;
+			width: calc(var(--ropes) * 22px);
 			background-color: azure;
 		}
 
@@ -102,18 +110,22 @@
 			color: white;
 			z-index: 200;
 		}
+
 		.flag {
 			position: relative;
 			height: 1px;
-			background-color: rgb(100,250,255,0.6);
+			background-color: rgb(100, 250, 255, 0.6);
 			margin: 0;
 			z-index: 100;
 			opacity: 0;
 		}
+
 		.showFlow .flag {
 			opacity: 1;
 		}
-		
+		header {
+			background-color: lightgray;
+		}
 	</style>
 	<script>
 		class Place {
@@ -135,7 +147,7 @@
 						let bellTo = this.places[i + 1].bell;
 						next.add(bellTo, true);
 						next.add(bellFrom, true);
-						let callDown = i>0 ? this.places[i-1].bell : 'L';
+						let callDown = i > 0 ? this.places[i - 1].bell : 'L';
 						next.change = [bellFrom, bellTo, callDown];
 						i++;
 					}
@@ -172,19 +184,19 @@
 		class RopeDisplay {
 			constructor(bell, place, bells, following) {
 				this.bell = bell;
-				this.place = place ;
+				this.place = place;
 				this.bells = bells + 1;
 				this.following = following;
 			}
 			show() {
 				let followOffset = this.following == "L" ? 0 : this.following - this.bell;
-				let w = followOffset > 0 ? 24*followOffset : -23*followOffset+2;
-				let m = followOffset > 0 ? 0 : 23*followOffset + 8;
-				
+				let w = followOffset > 0 ? 22 * followOffset +10 : -22 * followOffset;
+				let m = followOffset > 0 ? 0 : 22 * followOffset ;
+
 				return `<div class="rope">
 					<div id="rope${this.bell}" 
 					style='height:${100 * (this.bells - this.place) / this.bells}%;'
-					>${this.bell%10}</div>
+					>${this.bell % 10}</div>
 					<div class="flag" style="width:${w}px;margin-left:${m}px;"></div></div>`;
 			}
 		}
@@ -214,7 +226,9 @@
 				this.clear();
 			}
 			clear() {
-				this.changes = new Changes(8);
+				let ropes = document.getElementById("ropesInput").value || 8;
+				this.changes = new Changes(ropes);
+				document.documentElement.style.setProperty("--ropes", ropes);
 				this.show();
 			}
 			show() {
@@ -225,7 +239,7 @@
 					if (row.change) {
 						op.push(`<div class='change' onclick="undo()">
 							<span>${row.change[0]} to ${row.change[1]} 
-								<span class="call-down">${row.change[2]=='L'?"L":`&gt;${row.change[2]}`}</span>
+								<span class="call-down">${row.change[2] == 'L' ? "L" : `&gt;${row.change[2]}`}</span>
 								</span></div>`);
 					} else {
 						op.push("<div></div>");
@@ -323,14 +337,20 @@
 	<!--
 		<input type="text" id="changeChoice"></input> <button onclick="goChange()">go</button>
 		-->
-	<button onclick="clearDisplay()">clear</button>
-	<label><input type="checkbox" id="placesDisplaySwitch" onchange="flipPlacesDisplay(this.checked)" />show
-		places</label>
-	<label id="flowDisplaySwitch" style="opacity:0;" ><input type="checkbox" onchange="flipFlowDisplay(this.checked)" />show
+	<header>
+		<label>ropes: <input id="ropesInput" type="number" length="2" min="2" max="30" value="8" /></label>
+		<button onclick="clearDisplay()">clear</button>
+		<label><input type="checkbox" id="placesDisplaySwitch" onchange="flipPlacesDisplay(this.checked)" />show
+			places</label>
+		<label id="flowDisplaySwitch" style="opacity:0;"><input type="checkbox" id="flowDisplayInput"
+				onchange="flipFlowDisplay(this.checked)" />show
 			following</label>
-	<div id="changes" class="changes">
+	</header>
+	<main>
+		<div id="changes" class="changes">
 
-	</div>
+		</div>
+	</main>
 </body>
 
 </html>
