@@ -33,12 +33,22 @@
 			background-color: pink;
 		}
 
-		#changes {
+		.change {
+			color: royalblue;
+		}
+
+		.call-down {
+			font-size: small;
+			color:dodgerblue;
+			margin-left: 10px;
+		}
+
+		.changes {
 			margin: 20px 10px;
 			user-select: none;
 			-webkit-user-select: none;
 			display: grid;
-			grid-template-columns: 50px auto;
+			grid-template-columns: 70px auto;
 		}
 
 		.row,
@@ -52,6 +62,7 @@
 
 		.row {
 			display: flex;
+			align-items: flex-start;
 		}
 
 		.places {
@@ -116,15 +127,17 @@
 		class Row {
 			change = null;
 			places = [];
-			swap(bellFrom, bellTo) {
+			swap(bellFrom) {
 				let next = new Row();
 				let last = this.places.length;
 				for (let i = 0; i < last; i++) {
 					if (i < last - 1 && this.places[i].bell == bellFrom) {
-						next.add(this.places[i + 1].bell, true);
-						next.add(this.places[i].bell, true);
+						let bellTo = this.places[i + 1].bell;
+						next.add(bellTo, true);
+						next.add(bellFrom, true);
+						let callDown = i>0 ? this.places[i-1].bell : 'L';
+						next.change = [bellFrom, bellTo, callDown];
 						i++;
-						next.change = [bellFrom, bellTo];
 					}
 					else {
 						next.add(this.places[i].bell);
@@ -148,8 +161,8 @@
 					firstRow.add(i);
 				}
 			}
-			change(bellFrom, bellTo) {
-				this.rows.push(this.rows[this.rows.length - 1].swap(bellFrom, bellTo));
+			change(bellFrom) {
+				this.rows.push(this.rows[this.rows.length - 1].swap(bellFrom));
 			}
 			size() {
 				return this.rows.length;
@@ -171,7 +184,7 @@
 				return `<div class="rope">
 					<div id="rope${this.bell}" 
 					style='height:${100 * (this.bells - this.place) / this.bells}%;'
-					>${this.bell}</div>
+					>${this.bell%10}</div>
 					<div class="flag" style="width:${w}px;margin-left:${m}px;"></div></div>`;
 			}
 		}
@@ -210,7 +223,10 @@
 				for (let i = 0; i < last; i++) {
 					let row = this.changes.rows[i];
 					if (row.change) {
-						op.push(`<div class='change' onclick="undo()"><span>${row.change[0]} to ${row.change[1]}</span></div>`);
+						op.push(`<div class='change' onclick="undo()">
+							<span>${row.change[0]} to ${row.change[1]} 
+								<span class="call-down">${row.change[2]=='L'?"L":`&gt;${row.change[2]}`}</span>
+								</span></div>`);
 					} else {
 						op.push("<div></div>");
 					}
@@ -250,7 +266,7 @@
 				let lastRow = this.changes.rows[this.changes.rows.length - 1];
 				for (let i = 0; i < lastRow.size() - 1; i++) {
 					if (lastRow.places[i].bell == bellFrom) {
-						this.changes.change(bellFrom, lastRow.places[i + 1].bell);
+						this.changes.change(bellFrom);
 						break;
 					}
 				}
@@ -312,7 +328,7 @@
 		places</label>
 	<label id="flowDisplaySwitch" style="opacity:0;" ><input type="checkbox" onchange="flipFlowDisplay(this.checked)" />show
 			following</label>
-	<div id="changes">
+	<div id="changes" class="changes">
 
 	</div>
 </body>
