@@ -79,7 +79,7 @@
 			background-color: whitesmoke;
 		}
 
-		.rope>div {
+		.rope>div:first-child {
 			position: relative;
 			top: 0;
 			width: 100%;
@@ -87,7 +87,20 @@
 			font-size: x-small;
 			text-align: center;
 			color: white;
+			z-index: 200;
 		}
+		.flag {
+			position: relative;
+			height: 1px;
+			background-color: rgb(100,250,255,0.6);
+			margin: 0;
+			z-index: 100;
+			opacity: 0;
+		}
+		.showFlow .flag {
+			opacity: 1;
+		}
+		
 	</style>
 	<script>
 		class Place {
@@ -142,25 +155,32 @@
 
 		}
 		class RopeDisplay {
-			constructor(bell, place, bells) {
+			constructor(bell, place, bells, following) {
 				this.bell = bell;
 				this.place = place ;
 				this.bells = bells + 1;
+				this.following = following;
 			}
 			show() {
+				let followOffset = this.following == "L" ? 0 : this.following - this.bell;
+				let w = followOffset > 0 ? 24*followOffset : -23*followOffset+2;
+				let m = followOffset > 0 ? 0 : 23*followOffset + 8;
+				
 				return `<div class="rope">
 					<div id="rope${this.bell}" 
 					style='height:${100 * (this.bells - this.place) / this.bells}%;'
-					>${this.bell}</div></div>`;
+					>${this.bell}</div>
+					<div class="flag" style="width:${w}px;margin-left:${m}px;"></div></div>`;
 			}
 		}
 		class RopeSetDisplay {
-			constructor(places) {
+			constructor(places, following) {
 				this.bells = places.length;
+				this.following = following;
 				this.places = places;
 				this.ropes = [];
 				for (let i = 1; i < this.places.length; i++) {
-					this.ropes.push(new RopeDisplay(i, this.places[i], this.bells));
+					this.ropes.push(new RopeDisplay(i, this.places[i], this.bells, this.following[i]));
 				}
 			}
 			show() {
@@ -211,7 +231,7 @@
 				this.topDiv.innerHTML = s;
 			}
 			showPlaceGraphics(op, bells, following) {
-				let ropeset = new RopeSetDisplay(bells);
+				let ropeset = new RopeSetDisplay(bells, following);
 				op.push(ropeset.show());
 			}
 			showPlacesNumbers(op, bells, following) {
@@ -242,10 +262,21 @@
 					this.topDiv.classList.add("showPlaces");
 				}
 			}
+			showFlow(value) {
+				if (!value) {
+					this.topDiv.classList.remove("showFlow");
+				} else {
+					this.topDiv.classList.add("showFlow");
+				}
+			}
 		}
 
 		function flipPlacesDisplay(value) {
 			changeDisplay.showPlaces(value);
+			document.getElementById("flowDisplaySwitch").style.opacity = value ? 1 : 0;
+		}
+		function flipFlowDisplay(value) {
+			changeDisplay.showFlow(value);
 		}
 
 		function go(bellFrom) {
@@ -270,6 +301,8 @@
 		-->
 	<input type="checkbox" id="placesDisplaySwitch" onchange="flipPlacesDisplay(this.checked)" /><label>show
 		places</label>
+	<span id="flowDisplaySwitch" style="opacity:0;" ><input type="checkbox" onchange="flipFlowDisplay(this.checked)" /><label>show
+			following</label></span>
 	<div id="changes">
 
 	</div>
