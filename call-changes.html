@@ -48,17 +48,45 @@
 			display: flex;
 		}
 
-		.row {display:flex;}
+		.row {
+			display: flex;
+		}
 
 		.places {
 			display: none;
 		}
+
 		.showPlaces .places {
 			display: flex;
 		}
 
 		.places {
 			background-color: azure;
+			margin: 4px;
+		}
+
+		.ropeSet {
+			display: flex;
+			justify-content: space-evenly;
+			width: 200px;
+			background-color: azure;
+		}
+
+		.rope {
+			position: relative;
+			height: 100px;
+			width: 10px;
+			background-color: whitesmoke;
+		}
+
+		.rope>div {
+			position: relative;
+			top: 0;
+			width: 100%;
+			background-color: rgb(220, 80, 0);
+			font-size: x-small;
+			text-align: center;
+			color: white;
 		}
 	</style>
 	<script>
@@ -113,6 +141,35 @@
 			}
 
 		}
+		class RopeDisplay {
+			constructor(bell, place, bells) {
+				this.bell = bell;
+				this.place = place + 1;
+				this.bells = bells + 1;
+			}
+			show() {
+				return `<div class="rope"><div id="rope${this.bell}" style='height:${100 * this.place / this.bells}%;'>${this.bell}</div></div>`;
+			}
+		}
+		class RopeSetDisplay {
+			constructor(places) {
+				this.bells = places.length;
+				this.places = places;
+				this.ropes = [];
+				for (let i = 1; i < this.places.length; i++) {
+					this.ropes.push(new RopeDisplay(i, this.places[i], this.bells));
+				}
+			}
+			show() {
+				let op = [];
+				op.push("<div class='places'><div class='ropeSet'>");
+				for (let i = 0; i < this.ropes.length; i++) {
+					op.push(this.ropes[i].show());
+				}
+				op.push("</div></div>");
+				return op.join("");
+			}
+		}
 		class ChangeDisplay {
 			constructor() {
 				this.topDiv = document.getElementById("changes");
@@ -143,15 +200,23 @@
 						op.push(`<div class='place ${mark}' onclick="go(${n})">${n}</div>`);
 					}
 					op.push("</div>");
-					op.push("<div class='places'>");
-					for (let b = 1; b < bells.length; b++) {
-						op.push(`<div class='bell'>${bells[b]}<br/>${following[b]}</div>`);
-					}
-					op.push("</div>");
+					//this.showPlacesNumbers(op, bells, following);
+					this.showPlaceGraphics(op, bells, following);
 					op.push("</div>");
 				}
 				let s = op.join("");
 				this.topDiv.innerHTML = s;
+			}
+			showPlaceGraphics(op, bells, following) {
+				let ropeset = new RopeSetDisplay(bells);
+				op.push(ropeset.show());
+			}
+			showPlacesNumbers(op, bells, following) {
+				op.push("<div class='places'>");
+				for (let b = 1; b < bells.length; b++) {
+					op.push(`<div class='bell'>${bells[b]}<br/>${following[b]}</div>`);
+				}
+				op.push("</div>");
 			}
 			swap(bellFrom) {
 				let lastRow = this.changes.rows[this.changes.rows.length - 1];
