@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
+	<title>Changes</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<style>
 		body {
 			font-family: Arial, Helvetica, sans-serif;
@@ -35,6 +36,7 @@
 		#changes {
 			margin: 20px 10px;
 			user-select: none;
+			-webkit-user-select: none;
 			display: grid;
 			grid-template-columns: 50px auto;
 		}
@@ -196,6 +198,9 @@
 		class ChangeDisplay {
 			constructor() {
 				this.topDiv = document.getElementById("changes");
+				this.clear();
+			}
+			clear() {
 				this.changes = new Changes(8);
 				this.show();
 			}
@@ -270,7 +275,9 @@
 				}
 			}
 		}
-
+		function clearDisplay() {
+			changeDisplay.clear();
+		}
 		function flipPlacesDisplay(value) {
 			changeDisplay.showPlaces(value);
 			document.getElementById("flowDisplaySwitch").style.opacity = value ? 1 : 0;
@@ -299,10 +306,11 @@
 	<!--
 		<input type="text" id="changeChoice"></input> <button onclick="goChange()">go</button>
 		-->
-	<input type="checkbox" id="placesDisplaySwitch" onchange="flipPlacesDisplay(this.checked)" /><label>show
+	<button onclick="clearDisplay()">clear</button>
+	<label><input type="checkbox" id="placesDisplaySwitch" onchange="flipPlacesDisplay(this.checked)" />show
 		places</label>
-	<span id="flowDisplaySwitch" style="opacity:0;" ><input type="checkbox" onchange="flipFlowDisplay(this.checked)" /><label>show
-			following</label></span>
+	<label id="flowDisplaySwitch" style="opacity:0;" ><input type="checkbox" onchange="flipFlowDisplay(this.checked)" />show
+			following</label>
 	<div id="changes">
 
 	</div>
