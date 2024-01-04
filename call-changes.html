@@ -37,17 +37,23 @@
 			background-color: rgb(255, 240, 200);
 		}
 
-		.change span:hover {
+		.change>span:hover {
 			background-color: pink;
+		}
+		.change>span {
+			color: white;
+			background-color: dodgerblue;
+			text-indent: 6px;
+			padding:4px 6px 6px 6px;
 		}
 
 		.change {
-			color: royalblue;
+			width: 100%;
 		}
 
 		.call-down {
 			font-size: small;
-			color: dodgerblue;
+			color: white;
 			margin-left: 10px;
 		}
 
@@ -56,12 +62,21 @@
 			user-select: none;
 			-webkit-user-select: none;
 			display: grid;
-			grid-template-columns: 70px auto;
+			justify-items: start;
+			grid-template-columns: 90px min-content;
+			width: fit-content;
+			grid-row-gap: 4px;
+			background-color: whitesmoke;
+		}
+		.changes>div {
+			background-color: white;
+			padding: 0 4px;
+			width:100%;
 		}
 
 		.row,
 		.places {
-			padding: 5px 15px;
+			padding: 5px 10px;
 		}
 
 		.rowAndPlaces {
@@ -73,17 +88,24 @@
 			align-items: flex-start;
 		}
 
-		.places {
+		.places:not(.show) {
 			display: none;
 		}
 
-		.showPlaces .places {
+		.showPlaces .places:not(.hide) {
 			display: block;
 		}
 
 		.places {
 			background-color: azure;
 			margin: 4px;
+		}
+		.placeGraphShowButton {
+			position: relative;
+			width:20px;
+			height:20px;
+			background-color: aliceblue;
+			align-self: center;
 		}
 
 		.ropeSet {
@@ -139,6 +161,7 @@
 		class Row {
 			change = null;
 			places = [];
+			placeGraphState="";
 			swap(bellFrom) {
 				let next = new Row();
 				let last = this.places.length;
@@ -201,7 +224,9 @@
 			}
 		}
 		class RopeSetDisplay {
-			constructor(places, following) {
+			constructor(places, following, row, rowIndex) {
+				this.row = row;
+				this.rowIndex = rowIndex;
 				this.bells = places.length;
 				this.following = following;
 				this.places = places;
@@ -212,12 +237,25 @@
 			}
 			show() {
 				let op = [];
-				op.push("<div class='places'><div class='ropeSet'>");
+				op.push(`<div id="ropeGraph${this.rowIndex}" class='places ${this.row.placeGraphState||""}'
+					onclick="changeDisplay.setRowGraph(${this.rowIndex}, 'hide')">
+					<div class='ropeSet'>`);
 				for (let i = 0; i < this.ropes.length; i++) {
 					op.push(this.ropes[i].show());
 				}
 				op.push("</div></div>");
+				op.push(`<div class='placeGraphShowButton' 
+					onclick="changeDisplay.setRowGraph(${this.rowIndex}, 'show')">
+					</div>`);
 				return op.join("");
+			}
+			setRowGraph(state) {
+				if (this.row.placeGraphState == state) state = "";
+				this.row.placeGraphState = state;
+				let div = document.getElementById(`ropeGraph${this.rowIndex}`);
+				div.classList.remove("show");
+				div.classList.remove("hide");
+				if (state) div.classList.add(state);
 			}
 		}
 		class ChangeDisplay {
@@ -231,8 +269,12 @@
 				document.documentElement.style.setProperty("--ropes", ropes);
 				this.show();
 			}
+			setRowGraph(rowIndex, state) {
+				this.ropesets[rowIndex].setRowGraph(state);
+			}
 			show() {
 				let op = [];
+				this.ropesets=[];
 				let last = this.changes.size();
 				for (let i = 0; i < last; i++) {
 					let row = this.changes.rows[i];
@@ -258,24 +300,15 @@
 						op.push(`<div class='place ${mark}' onclick="go(${n})">${n}</div>`);
 					}
 					op.push("</div>");
-					//this.showPlacesNumbers(op, bells, following);
-					this.showPlaceGraphics(op, bells, following);
+
+					this.ropesets[i] = new RopeSetDisplay(bells, following, row, i);
+					op.push(this.ropesets[i].show());
 					op.push("</div>");
 				}
 				let s = op.join("");
 				this.topDiv.innerHTML = s;
 			}
-			showPlaceGraphics(op, bells, following) {
-				let ropeset = new RopeSetDisplay(bells, following);
-				op.push(ropeset.show());
-			}
-			showPlacesNumbers(op, bells, following) {
-				op.push("<div class='places'>");
-				for (let b = 1; b < bells.length; b++) {
-					op.push(`<div class='bell'>${bells[b]}<br/>${following[b]}</div>`);
-				}
-				op.push("</div>");
-			}
+
 			swap(bellFrom) {
 				let lastRow = this.changes.rows[this.changes.rows.length - 1];
 				for (let i = 0; i < lastRow.size() - 1; i++) {
