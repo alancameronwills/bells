@@ -64,7 +64,8 @@
 			display: grid;
 			justify-items: start;
 			grid-template-columns: 90px auto; /*min-content*/
-			width: fit-content;
+			/*width: fit-content;*/
+			max-width: max(360px,calc(var(--ropes)*80px));
 			grid-row-gap: 4px;
 			background-color: whitesmoke;
 		}
@@ -109,7 +110,9 @@
 			width:20px;
 			height:20px;
 			background-color: aliceblue;
-			border: 1px solid rgb(219, 237, 252);
+			background-image: url('graph.png');
+			opacity: 0.5;
+			border: 1px solid rgb(52, 157, 243);
 			border-radius: 4px;
 			margin: 2px;
 			align-self: center;
@@ -154,6 +157,17 @@
 		}
 		header {
 			background-color: lightgray;
+		}
+		label>img {
+			vertical-align: bottom;
+		}
+		#help {
+			font-style: italic;
+			color: blue;
+			margin: 10px 0;
+		}
+		#righthead {
+			float: right;
 		}
 	</style>
 	<script>
@@ -272,6 +286,7 @@
 			}
 			clear() {
 				let ropes = document.getElementById("ropesInput").value || 8;
+				ropes = Math.max(3,Math.min(16,ropes));
 				this.changes = new Changes(ropes);
 				document.documentElement.style.setProperty("--ropes", ropes);
 				this.show();
@@ -346,6 +361,23 @@
 				}
 			}
 		}
+		helpState = 0;
+		function advanceHelp() {
+			let help = document.getElementById("help");
+			switch (helpState) {
+				case 0: help.innerHTML = "Touch the <span style='color:white;background-color:dodgerblue'>change</span> if you want to undo";
+					helpState++;
+				break;
+				case 1: 
+					help.innerHTML = "To save an interesting sequence, find out how to do screenshots on your device";
+					helpState++;
+				break;
+				case 2: help.style.display = "none";
+					helpState++;
+				break;
+			}
+		}
+
 		function clearDisplay() {
 			changeDisplay.clear();
 		}
@@ -359,6 +391,7 @@
 
 		function go(bellFrom) {
 			changeDisplay.swap(bellFrom);
+			advanceHelp();
 		}
 		function goChange() {
 			let bellFrom = document.getElementById("changeChoice").value;
@@ -378,13 +411,15 @@
 		<input type="text" id="changeChoice"></input> <button onclick="goChange()">go</button>
 		-->
 	<header>
-		<label>ropes: <input id="ropesInput" type="number" length="2" min="2" max="16" value="8" /></label>
-		<button onclick="clearDisplay()">reset</button>
-		<label><input type="checkbox" id="placesDisplaySwitch" onchange="flipPlacesDisplay(this.checked)" />places</label>
+		<label><input type="checkbox" id="placesDisplaySwitch" onchange="flipPlacesDisplay(this.checked)" /><img src="graph.png"/></label>
 		<label id="flowDisplaySwitch" style="opacity:0;"><input type="checkbox" id="flowDisplayInput"
 				onchange="flipFlowDisplay(this.checked)" checked="checked" />following</label>
-	</header>
+		<div id="righthead">
+			<label>ropes: <input id="ropesInput" type="number" length="2" min="2" max="16" value="8" /></label>
+			<button onclick="clearDisplay()">reset</button></header>
+		</div>
 	<main>
+		<div id="help">Touch the bell you want to call up</div>
 		<div id="changes" class="changes showFlow">
 
 		</div>
