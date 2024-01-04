@@ -271,11 +271,14 @@
 				return op.join("");
 			}
 			setRowGraph(state) {
-				if (this.row.placeGraphState == state) state = "";
-				this.row.placeGraphState = state;
 				let div = document.getElementById(`ropeGraph${this.rowIndex}`);
 				div.classList.remove("show");
 				div.classList.remove("hide");
+				if (!!div.closest(".showPlaces") == (state=="show")
+					 || this.row.placeGraphState == state) {
+					state = "";
+				}
+				this.row.placeGraphState = state;
 				if (state) div.classList.add(state);
 			}
 		}
