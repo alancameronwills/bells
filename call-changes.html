@@ -23,7 +23,7 @@
 		.place,
 		.bell {
 			margin: 0;
-			padding: 10px 15px;
+			padding: 10px min(1.7vw,15px);
 		}
 
 		.place.changed {
@@ -54,16 +54,16 @@
 		.call-down {
 			font-size: small;
 			color: white;
-			margin-left: 10px;
+			margin-left: min(1vw,10px);
 		}
 
 		.changes {
-			margin: 20px 10px;
+			margin: 20px min(10px,0.2vw);
 			user-select: none;
 			-webkit-user-select: none;
 			display: grid;
 			justify-items: start;
-			grid-template-columns: 90px min-content;
+			grid-template-columns: 90px auto; /*min-content*/
 			width: fit-content;
 			grid-row-gap: 4px;
 			background-color: whitesmoke;
@@ -76,11 +76,13 @@
 
 		.row,
 		.places {
-			padding: 5px 10px;
+			padding: 5px 10px 5px 0;
 		}
 
 		.rowAndPlaces {
 			display: flex;
+			flex-wrap: wrap;
+			position: relative;
 		}
 
 		.row {
@@ -101,10 +103,15 @@
 			margin: 4px;
 		}
 		.placeGraphShowButton {
-			position: relative;
+			position: absolute;
+			bottom: 0;
+			right: 0;
 			width:20px;
 			height:20px;
 			background-color: aliceblue;
+			border: 1px solid rgb(219, 237, 252);
+			border-radius: 4px;
+			margin: 2px;
 			align-self: center;
 		}
 
@@ -372,15 +379,13 @@
 		-->
 	<header>
 		<label>ropes: <input id="ropesInput" type="number" length="2" min="2" max="16" value="8" /></label>
-		<button onclick="clearDisplay()">clear</button>
-		<label><input type="checkbox" id="placesDisplaySwitch" onchange="flipPlacesDisplay(this.checked)" />show
-			places</label>
+		<button onclick="clearDisplay()">reset</button>
+		<label><input type="checkbox" id="placesDisplaySwitch" onchange="flipPlacesDisplay(this.checked)" />places</label>
 		<label id="flowDisplaySwitch" style="opacity:0;"><input type="checkbox" id="flowDisplayInput"
-				onchange="flipFlowDisplay(this.checked)" />show
-			following</label>
+				onchange="flipFlowDisplay(this.checked)" checked="checked" />following</label>
 	</header>
 	<main>
-		<div id="changes" class="changes">
+		<div id="changes" class="changes showFlow">
 
 		</div>
 	</main>
