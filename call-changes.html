@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-
+<!-- TODO 
+	comments 
+	save with name and restore from list
+	save, start from a given row
+	save and compare branches
+  -->
 <head>
 	<title>Changes</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -231,7 +236,7 @@
 			}
 			encode() {
 				return (this.change ? hex(this.change[0] - 1) : ".")
-					+ (this.placeGraphState ? "#" + this.placeGraphState.substring(0, 1) : "");
+					+ (this.placeGraphState ? "_" + this.placeGraphState.substring(0, 1) : "");
 			}
 			decodeState(c) {
 				this.placeGraphState = c == 's' ? "show" : "hide";
@@ -260,21 +265,21 @@
 			}
 			encode() {
 				let op = [];
-				op.push(`${this.rows[0].size()}|`);
+				op.push(`${hex(this.rows[0].size()-1)}~`);
 				for (let i = 0; i < this.rows.length; i++) {
 					op.push(this.rows[i].encode());
 				}
 				return op.join('');
 			}
 			static decode(s) {
-				let size = parseInt(s);
-				if (size < 1 || size > 16) size = 10;
+				let size = parseInt(s.substr(0,1),16)+1;
+				if (size < 2 || size > 16) size = 10;
 				let changes = new Changes(size);
-				let i = s.indexOf('|') + 1;
+				let i = s.indexOf('~') + 1;
 				while (i < s.length) {
 					let c = s.substr(i, 1);
 					switch (c) {
-						case '#':
+						case '_':
 							i++;
 							if (i < s.length) {
 								changes.lastRow().decodeState(s.substr(i, 1));
@@ -470,7 +475,6 @@
 
 		function clearDisplay() {
 			changeDisplay.clear();
-			location.search = "";
 			setLink("");
 		}
 		function flipPlacesDisplay(value) {
