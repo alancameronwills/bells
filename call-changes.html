@@ -193,6 +193,13 @@
 			margin: 4px;
 			padding: 4px;
 		}
+		#undoButton {
+			margin: -25px 0 0 5px;
+			display: none;
+		}
+		#undoButton.show {
+			display: block;
+		}
 	</style>
 	<script>
 		function hex(n) {
@@ -413,6 +420,12 @@
 
 				let s = op.join("");
 				this.topDiv.innerHTML = s;
+				let ub = document.getElementById("undoButton");
+				if (last>1) {
+					ub.classList.add("show");
+				} else {
+					ub.classList.remove("show");
+				}
 			}
 
 			encode() {
@@ -532,6 +545,7 @@
 		<div id="changes" class="changes showFlow">
 
 		</div>
+		<img src="undo.png" id="undoButton" alt="undo" title="undo" onclick="undo()"/>
 		<hr />
 	</main>
 	<footer>
