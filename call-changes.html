@@ -540,7 +540,7 @@
 				}
 				const now = Tone.now();
 				for (let i = 0; i<row.places.length; i++) {
-					let f = this.bells[row.places[i].bell];
+					let f = this.bells[row.places[i+1].bell];
 					this.synth.triggerAttackRelease(f,0.2,now+0.2*i);
 				}
 
@@ -552,11 +552,11 @@
 		function advanceHelp() {
 			let help = document.getElementById("help");
 			switch (helpState) {
-				case 0: help.innerHTML = "Touch the <span style='color:white;background-color:dodgerblue'>change</span> if you want to undo";
+				case 0: help.innerHTML = "Notice the <b>Undo</b> button lower left";
 					helpState++;
 					break;
 				case 1:
-					help.innerHTML = "To save or share an interesting sequence, click the button at the bottom";
+					help.innerHTML = "You can <b>Share</b> a sequence with friends";
 					helpState++;
 					break;
 				case 2: help.style.display = "none";
@@ -660,7 +660,7 @@
 		<hr />
 	</main>
 	<footer>
-		<button onclick="copyLink()">Share or save</button>
+		<button id="shareButton" onclick="copyLink()">Share or save</button>
 		<div id="link"></div>
 		<div id="msg"></div>
 		<div id="qr"></div>
