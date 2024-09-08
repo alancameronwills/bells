@@ -537,8 +537,9 @@
 			
 			setQr(s);
 			if (s) {
-				navigator.clipboard.writeText(s).then (msg(`Link copied - paste it into a message to a friend
-				Or let them scan the QR code:`));
+				navigator.clipboard.writeText(s).then (msg(`Link copied - paste it into a message to a friend.
+				<br/>
+				Or let them scan this QR code:`));
 			} else {
 				msg("");
 			}
