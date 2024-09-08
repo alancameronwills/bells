@@ -540,7 +540,7 @@
 				}
 				const now = Tone.now();
 				for (let i = 0; i<row.places.length; i++) {
-					let f = this.bells[row.places[i+1].bell];
+					let f = this.bells[row.places[i].bell];
 					this.synth.triggerAttackRelease(f,0.2,now+0.2*i);
 				}
 
