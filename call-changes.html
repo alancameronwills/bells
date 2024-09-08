@@ -6,6 +6,7 @@
 	save, start from a given row
 	save and compare branches
   -->
+
 <head>
 	<title>Changes</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -188,19 +189,34 @@
 		#righthead {
 			float: right;
 		}
+
 		#link {
 			user-select: all;
 			margin: 4px;
 			padding: 4px;
 		}
+
 		#undoButton {
 			margin: -25px 0 0 5px;
 			display: none;
 		}
+
 		#undoButton.show {
 			display: block;
 		}
+		#qr {
+			margin: 20px auto;
+			display: none;
+		}
+		#qr>img {
+			margin: auto;
+		}
+		#qr.show {
+			display: block;
+		}
 	</style>
+	<script type="text/javascript" src="jquery.min.js"></script>
+	<script type="text/javascript" src="qrcode.js"></script>
 	<script>
 		function hex(n) {
 			return (+n).toString(16);
@@ -272,14 +288,14 @@
 			}
 			encode() {
 				let op = [];
-				op.push(`${hex(this.rows[0].size()-1)}~`);
+				op.push(`${hex(this.rows[0].size() - 1)}~`);
 				for (let i = 0; i < this.rows.length; i++) {
 					op.push(this.rows[i].encode());
 				}
 				return op.join('');
 			}
 			static decode(s) {
-				let size = parseInt(s.substr(0,1),16)+1;
+				let size = parseInt(s.substr(0, 1), 16) + 1;
 				if (size < 2 || size > 16) size = 10;
 				let changes = new Changes(size);
 				let i = s.indexOf('~') + 1;
@@ -421,7 +437,7 @@
 				let s = op.join("");
 				this.topDiv.innerHTML = s;
 				let ub = document.getElementById("undoButton");
-				if (last>1) {
+				if (last > 1) {
 					ub.classList.add("show");
 				} else {
 					ub.classList.remove("show");
@@ -482,7 +498,6 @@
 		function copyLink() {
 			let query = `s=${encodeURIComponent(changeDisplay.encode())}`;
 			let code = `${location.origin}${location.pathname}?${query}`;
-			navigator.clipboard.writeText(code).then (()=>alert("Link copied! Paste it into a message to send to a friend"));
 			setLink(code);
 		}
 
@@ -511,16 +526,41 @@
 			changeDisplay.undo();
 			setLink("");
 		}
+		function msg(s) {
+			document.getElementById("msg").innerHTML = s;
+		}
 		function setLink(s) {
 			let div = document.getElementById("link");
-			div.innerText=s;
+			div.innerText = s;
 			if (s) div.style.border = "1px solid blue";
 			else div.style.border = "";
+			
+			setQr(s);
+			if (s) {
+				navigator.clipboard.writeText(s).then (msg(`Link copied - paste it into a message to a friend
+				Or let them scan the QR code:`));
+			} else {
+				msg("");
+			}
+		}
+		var qrcode;
+		function setQr(s) {
+			let qr = document.getElementById("qr");
+			if (s) {
+				qrcode.makeCode(s);
+				qr.classList.add("show");
+			} else {
+				qr.classList.remove("show");
+			}
 		}
 		function init() {
 			let url = new URL(window.location.href);
 			let s = url.searchParams.get("s");
 			changeDisplay = new ChangeDisplay(s);
+			qrcode = new QRCode("qr", {
+				width: 200,
+				height: 200
+			});
 		}
 	</script>
 </head>
@@ -545,12 +585,14 @@
 		<div id="changes" class="changes showFlow">
 
 		</div>
-		<img src="undo.png" id="undoButton" alt="undo" title="undo" onclick="undo()"/>
+		<img src="undo.png" id="undoButton" alt="undo" title="undo" onclick="undo()" />
 		<hr />
 	</main>
 	<footer>
 		<button onclick="copyLink()">Share or save</button>
 		<div id="link"></div>
+		<div id="msg"></div>
+		<div id="qr"></div>
 		<div style="float:right"><a href="mailto:alan@cameronwills.org?subject=Call+changes+worksheet">Comment on
 				the app</a></div>
 	</footer>
