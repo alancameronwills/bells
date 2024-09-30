@@ -589,14 +589,18 @@
 		function advanceHelp() {
 			let help = document.getElementById("help");
 			switch (helpState) {
-				case 0: help.innerHTML = "Notice the <b>Undo</b> button lower left";
+				case 0: help.innerHTML = "Notice the <b>Delete last</b> button lower left";
 					helpState++;
 					break;
 				case 1:
 					help.innerHTML = "You can <b>Share</b> a sequence with friends";
 					helpState++;
 					break;
-				case 2: help.style.display = "none";
+				case 2:
+					help.innerHTML = "Click a diamond to swap independent changes";
+					helpState++;
+					break;
+				case 3: help.style.display = "none";
 					helpState++;
 					break;
 			}
@@ -631,6 +635,7 @@
 		}
 		function shiftUp(i) {
 			changeDisplay.shiftUp(i);
+			advanceHelp();
 			setLink("");
 		}
 		function undo() {
@@ -697,7 +702,7 @@
 		<div id="changes" class="changes showFlow">
 
 		</div>
-		<img src="undo.png" id="undoButton" alt="undo" title="undo" onclick="undo()" />
+		<img src="backspace.png" id="undoButton" alt="undo" title="Delete last" onclick="undo()" />
 		<hr />
 	</main>
 	<footer>
