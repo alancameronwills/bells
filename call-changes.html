@@ -13,6 +13,7 @@
 	<style>
 		:root {
 			--ropes: 8;
+			--changeColor: dodgerblue;
 		}
 
 		body {
@@ -44,13 +45,15 @@
 			background-color: rgb(255, 240, 200);
 		}
 
+		/*
 		.change>span:hover {
 			background-color: pink;
 		}
+		*/
 
 		.change>span {
 			color: white;
-			background-color: dodgerblue;
+			background-color: var(--changeColor);
 			text-indent: 6px;
 			padding: 4px 6px 6px 6px;
 		}
@@ -99,6 +102,20 @@
 		.row {
 			display: flex;
 			align-items: flex-start;
+		}
+
+		.shiftUpMark {
+			display: inline-block;
+			transform: rotate(45deg) translate(0, -8px);
+			z-index: 1;
+			position: absolute;
+			height: 10px;
+			width: 10px;
+			background-color: var(--changeColor);
+		}
+
+		.shiftUpHide {
+			opacity: 0;
 		}
 
 		.places:not(.show) {
@@ -204,18 +221,21 @@
 		#undoButton.show {
 			display: block;
 		}
+
 		#qr {
 			margin: 20px auto;
 			display: none;
 		}
+
 		#qr>img {
 			margin: auto;
 		}
+
 		#qr.show {
 			display: block;
 		}
 	</style>
-	<script src="https://unpkg.com/tone"></script> 
+	<script src="https://unpkg.com/tone"></script>
 	<script type="text/javascript" src="jquery.min.js"></script>
 	<script type="text/javascript" src="qrcode.js"></script>
 	<script>
@@ -243,7 +263,7 @@
 						next.add(bellTo, true);
 						next.add(bellFrom, true);
 						let callDown = i > 0 ? this.places[i - 1].bell : 'L';
-						next.change = [bellFrom, bellTo, callDown];
+						next.change = [bellFrom, bellTo, callDown, i];
 						i++;
 					}
 					else {
@@ -254,6 +274,9 @@
 			}
 			add(bell, mark = false) {
 				this.places.push(new Place(bell, mark));
+			}
+			swapPlace() {
+				return this.change == null ? -1 : this.change[3];
 			}
 			size() {
 				return this.places.length;
@@ -275,8 +298,9 @@
 					firstRow.add(i);
 				}
 			}
-			change(bellFrom) {
-				this.rows.push(this.rows[this.rows.length - 1].swap(bellFrom));
+			change(bellFrom, canShift = false) {
+				let newRow = this.rows[this.rows.length - 1].swap(bellFrom);
+				this.rows.push(newRow);
 			}
 			ropeCount() {
 				return this.lastRow().size();
@@ -300,6 +324,7 @@
 				if (size < 2 || size > 16) size = 10;
 				let changes = new Changes(size);
 				let i = s.indexOf('~') + 1;
+				let previousFrom = -1;
 				while (i < s.length) {
 					let c = s.substr(i, 1);
 					switch (c) {
@@ -409,13 +434,19 @@
 				let op = [];
 				this.ropesets = [];
 				let last = this.changes.size();
+				let previousSwapPlace = -1;
 				for (let i = 0; i < last; i++) {
 					let row = this.changes.rows[i];
+					let swapPlace = row.swapPlace();
+					let canShiftUp = swapPlace >= 0 && previousSwapPlace >= 0 &&
+						Math.abs(swapPlace - previousSwapPlace) >= 2;
+					previousSwapPlace = swapPlace;
 					if (row.change) {
-						op.push(`<div class='change' onclick="undo()">
+						op.push(`<div class='change' onclick="${canShiftUp ? "shiftUp("+ i + ")" : ''}">
 							<span>${row.change[0]} to ${row.change[1]} 
 								<span class="call-down">${row.change[2] == 'L' ? "L" : `&gt;${row.change[2]}`}</span>
-								</span></div>`);
+								</span>
+								<div class="shiftUpMark ${canShiftUp ? "shiftUpShow" : "shiftUpHide"}"></div></div>`);
 					} else {
 						op.push("<div></div>");
 					}
@@ -464,6 +495,12 @@
 				this.show();
 				window.scrollTo(0, this.topDiv.scrollHeight);
 			}
+			shiftUp(i) {
+				if (i > 0 && i < this.changes.rows.length) {
+					this.changes.rows.splice(i-1, 2, this.changes.rows[i], this.changes.rows[i-1]);
+					this.show();
+				}
+			}
 			undo() {
 				let lastRow = this.changes.rows.pop();
 				this.show();
@@ -488,7 +525,7 @@
 			constructor() {
 				this.started = false;
 				this.createNoteTable();
-				
+
 			}
 
 			createNoteTable() {
@@ -539,9 +576,9 @@
 					this.started = true;
 				}
 				const now = Tone.now();
-				for (let i = 0; i<row.places.length; i++) {
+				for (let i = 0; i < row.places.length; i++) {
 					let f = this.bells[row.places[i].bell];
-					this.synth.triggerAttackRelease(f,0.2,now+0.2*i);
+					this.synth.triggerAttackRelease(f, 0.2, now + 0.2 * i);
 				}
 
 			}
@@ -592,6 +629,10 @@
 			let bellFrom = document.getElementById("changeChoice").value;
 			go(bellFrom);
 		}
+		function shiftUp(i) {
+			changeDisplay.shiftUp(i);
+			setLink("");
+		}
 		function undo() {
 			changeDisplay.undo();
 			setLink("");
@@ -604,10 +645,10 @@
 			div.innerText = s;
 			if (s) div.style.border = "1px solid blue";
 			else div.style.border = "";
-			
+
 			setQr(s);
 			if (s) {
-				navigator.clipboard.writeText(s).then (msg(`Link copied - paste it into a message to a friend.
+				navigator.clipboard.writeText(s).then(msg(`Link copied - paste it into a message to a friend.
 				<br/>
 				Or let them scan this QR code:`));
 			} else {
