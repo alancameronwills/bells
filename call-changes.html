@@ -36,7 +36,20 @@
 
 		.place.changed {
 			font-weight: bold;
-			background-color: bisque;
+			/*background-color: bisque;*/
+		}
+
+		.place.changed::after {
+			height: 2px;
+			width: 30px;
+			transform: translate(-8px, -6px);
+			background-color: red;
+			position: absolute;
+			content: " ";
+		}
+
+		.place.changed + .place {
+			font-weight: bold;
 		}
 
 		.place:hover {
@@ -215,6 +228,7 @@
 
 		#undoButton {
 			margin: -25px 0 0 5px;
+			height: 20px;
 			display: none;
 		}
 
@@ -234,6 +248,8 @@
 		#qr.show {
 			display: block;
 		}
+
+		
 	</style>
 	<script src="https://unpkg.com/tone"></script>
 	<script type="text/javascript" src="jquery.min.js"></script>
@@ -251,29 +267,29 @@
 			}
 		}
 		class Row {
-			change = null;
-			places = [];
-			placeGraphState = "";
 			swap(bellFrom) {
-				let next = new Row();
-				let last = this.places.length;
-				for (let i = 0; i < last; i++) {
-					if (i < last - 1 && this.places[i].bell == bellFrom) {
-						let bellTo = this.places[i + 1].bell;
-						next.add(bellTo, true);
-						next.add(bellFrom, true);
-						let callDown = i > 0 ? this.places[i - 1].bell : 'L';
-						next.change = [bellFrom, bellTo, callDown, i];
-						i++;
-					}
-					else {
-						next.add(this.places[i].bell);
-					}
+				let next = new Row(this);
+				let swapPlace = this.places.findIndex(place => place.bell == bellFrom);
+				if (swapPlace < next.places.length - 1) {
+					let bellTo = next.places[swapPlace + 1].bell;
+					[next.places[swapPlace], next.places[swapPlace + 1]] = [next.places[swapPlace + 1], next.places[swapPlace]];
+					next.places[swapPlace].mark = true;
+					//next.places[swapPlace+1].mark = true;
+					let callDown = swapPlace > 0 ? next.places[swapPlace - 1].bell : 'L';
+					next.change = [bellFrom, bellTo, callDown, swapPlace];
 				}
 				return next;
 			}
-			add(bell, mark = false) {
-				this.places.push(new Place(bell, mark));
+			constructor(oldRow) {
+				this.change = null;
+				this.placeGraphState = "";
+				if (oldRow.swap) {
+					this.places = Array.from(oldRow.places, p => new Place(p.bell, false));
+				} else if (typeof oldRow === "number") {
+					this.places = Array.from({ length: oldRow }, (_, i) => new Place(i + 1, false));
+				} else {
+					this.places = [];
+				}
 			}
 			swapPlace() {
 				return this.change == null ? -1 : this.change[3];
@@ -292,11 +308,12 @@
 		class Changes {
 			constructor(size) {
 				this.rows = [];
-				let firstRow = new Row();
+				let firstRow = new Row(size);
 				this.rows.push(firstRow);
+				/*
 				for (let i = 1; i <= size; i++) {
 					firstRow.add(i);
-				}
+				} */
 			}
 			change(bellFrom, canShift = false) {
 				let newRow = this.rows[this.rows.length - 1].swap(bellFrom);
@@ -442,7 +459,7 @@
 						Math.abs(swapPlace - previousSwapPlace) >= 2;
 					previousSwapPlace = swapPlace;
 					if (row.change) {
-						op.push(`<div class='change' onclick="${canShiftUp ? "shiftUp("+ i + ")" : ''}">
+						op.push(`<div class='change' onclick="${canShiftUp ? "shiftUp(" + i + ")" : ''}">
 							<span>${row.change[0]} to ${row.change[1]} 
 								<span class="call-down">${row.change[2] == 'L' ? "L" : `&gt;${row.change[2]}`}</span>
 								</span>
@@ -497,7 +514,7 @@
 			}
 			shiftUp(i) {
 				if (i > 0 && i < this.changes.rows.length) {
-					this.changes.rows.splice(i-1, 2, this.changes.rows[i], this.changes.rows[i-1]);
+					this.changes.rows.splice(i - 1, 2, this.changes.rows[i], this.changes.rows[i - 1]);
 					this.show();
 				}
 			}
